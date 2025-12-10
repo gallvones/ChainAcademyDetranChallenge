@@ -1,0 +1,1 @@
+export { getAllCars } from './allcars';
