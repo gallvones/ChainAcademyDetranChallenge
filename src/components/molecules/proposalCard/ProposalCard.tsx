@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from 'react';
 import { cva } from 'class-variance-authority';
 import Image from 'next/image';
-import { FileText, DollarSign, Phone, Mail, Calendar, Car, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { FileText, DollarSign, Phone, Mail, Calendar, Car, AlertCircle, CheckCircle, Clock, ThumbsUp, ThumbsDown } from 'lucide-react';
 import type { ProposalCardProps } from './types';
 
 const cardVariants = cva(
@@ -13,6 +14,7 @@ const cardVariants = cva(
         pending: 'bg-gradient-to-br from-white to-amber-50/30 border-amber-300/40 hover:border-amber-400/60 shadow-[0_8px_32px_rgba(251,191,36,0.15)] hover:shadow-[0_16px_48px_rgba(251,191,36,0.3)]',
         approved: 'bg-gradient-to-br from-white to-green-50/30 border-green-300/40 hover:border-green-400/60 shadow-[0_8px_32px_rgba(34,197,94,0.15)] hover:shadow-[0_16px_48px_rgba(34,197,94,0.3)]',
         rejected: 'bg-gradient-to-br from-white to-red-50/30 border-red-300/40 hover:border-red-400/60 shadow-[0_8px_32px_rgba(239,68,68,0.15)] hover:shadow-[0_16px_48px_rgba(239,68,68,0.3)]',
+        matched: 'bg-gradient-to-br from-white to-blue-50/30 border-blue-300/40 hover:border-blue-400/60 shadow-[0_8px_32px_rgba(59,130,246,0.15)] hover:shadow-[0_16px_48px_rgba(59,130,246,0.3)]',
       },
     },
     defaultVariants: {
@@ -29,6 +31,7 @@ const statusBadgeVariants = cva(
         pending: 'bg-amber-100 text-amber-700 border border-amber-300',
         approved: 'bg-green-100 text-green-700 border border-green-300',
         rejected: 'bg-red-100 text-red-700 border border-red-300',
+        matched: 'bg-blue-100 text-blue-700 border border-blue-300',
       },
     },
     defaultVariants: {
@@ -41,15 +44,148 @@ const statusConfig = {
   pending: { icon: Clock, label: 'Pendente' },
   approved: { icon: CheckCircle, label: 'Aprovada' },
   rejected: { icon: AlertCircle, label: 'Rejeitada' },
+  matched: { icon: CheckCircle, label: 'Aceita' },
 };
 
 export function ProposalCard({
   proposal,
+  userRole,
   className = '',
 }: ProposalCardProps) {
-  const status = proposal.status as 'pending' | 'approved' | 'rejected';
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(proposal.status);
+
+  const status = currentStatus as 'pending' | 'approved' | 'rejected' | 'matched';
   const StatusIcon = statusConfig[status].icon;
   const statusLabel = statusConfig[status].label;
+
+  // Lógica de exibição de botões baseada na role
+  const canAcceptProposal = userRole === 'owner' && status === 'pending';
+  const canApproveOrReject = userRole === 'manager' && status === 'matched';
+
+  const handleAcceptProposal = async () => {
+    // Alerta de confirmação
+    const confirmed = window.confirm(
+      'Tem certeza que deseja aceitar esta proposta? Esta ação irá alterar o status para "matched".'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/proposals/updatestatus', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          proposalId: proposal._id,
+          status: 'matched',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao aceitar proposta');
+      }
+
+      // Atualizar o status local
+      setCurrentStatus('matched');
+      alert('Proposta aceita com sucesso!');
+
+      // Recarregar a página para atualizar a lista
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Erro ao aceitar proposta:', error);
+      alert(error.message || 'Erro ao aceitar proposta. Tente novamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleApproveNegotiation = async () => {
+    const confirmed = window.confirm(
+      'Tem certeza que deseja aprovar esta negociação?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/proposals/updatestatus', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          proposalId: proposal._id,
+          status: 'approved',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao aprovar negociação');
+      }
+
+      setCurrentStatus('approved');
+      alert('Negociação aprovada com sucesso!');
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Erro ao aprovar negociação:', error);
+      alert(error.message || 'Erro ao aprovar negociação. Tente novamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRejectNegotiation = async () => {
+    const confirmed = window.confirm(
+      'Tem certeza que deseja recusar esta negociação?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/proposals/updatestatus', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          proposalId: proposal._id,
+          status: 'rejected',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao recusar negociação');
+      }
+
+      setCurrentStatus('rejected');
+      alert('Negociação recusada.');
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Erro ao recusar negociação:', error);
+      alert(error.message || 'Erro ao recusar negociação. Tente novamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className={cardVariants({ variant: status, className })}>
@@ -143,6 +279,66 @@ export function ProposalCard({
             </span>
           </div>
         </div>
+
+        {/* Action Buttons */}
+        {canAcceptProposal && (
+          <div className="px-6 pb-6">
+            <button
+              onClick={handleAcceptProposal}
+              disabled={isLoading}
+              className="w-full bg-[#22c55e] hover:bg-[#16a34a] disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <ThumbsUp className="w-5 h-5" />
+                  Aceitar Proposta
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {canApproveOrReject && (
+          <div className="px-6 pb-6 grid grid-cols-2 gap-3">
+            <button
+              onClick={handleApproveNegotiation}
+              disabled={isLoading}
+              className="bg-[#22c55e] hover:bg-[#16a34a] disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-5 h-5" />
+                  Aprovar
+                </>
+              )}
+            </button>
+            <button
+              onClick={handleRejectNegotiation}
+              disabled={isLoading}
+              className="bg-[#ef4444] hover:bg-[#dc2626] disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </>
+              ) : (
+                <>
+                  <AlertCircle className="w-5 h-5" />
+                  Recusar
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Hover Border Effect */}

@@ -26,7 +26,7 @@ interface Proposal {
 }
 
 export default function ApprovalsPage() {
-  const { userId, isAuthenticated } = useAuth();
+  const { userId, isAuthenticated, userRole } = useAuth();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -126,7 +126,7 @@ export default function ApprovalsPage() {
         {!loading && !error && proposals.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up">
             {proposals.map((proposal) => (
-              <ProposalCard key={proposal._id} proposal={proposal} />
+              <ProposalCard key={proposal._id} proposal={proposal} userRole={userRole || ''} />
             ))}
           </div>
         )}

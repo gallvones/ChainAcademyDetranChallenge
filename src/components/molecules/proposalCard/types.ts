@@ -17,5 +17,6 @@ export interface ProposalCardProps {
     createdAt: string;
     updatedAt: string;
   };
+  userRole: string;
   className?: string;
 }
