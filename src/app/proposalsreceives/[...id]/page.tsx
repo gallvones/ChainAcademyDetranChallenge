@@ -39,7 +39,7 @@ export default function  ProposalsReceivesPage() {
       }
 
       try {
-        const response = await fetch(`/api/proposals/getbyuserid?userId=${userId}`);
+        const response = await fetch(`/api/proposals/getbyowner?ownerId=${userId}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -66,7 +66,7 @@ export default function  ProposalsReceivesPage() {
       // Dá um pequeno delay para o hook carregar
       const timer = setTimeout(() => {
         if (!userId) {
-          setError('Usuário não autenticado. Faça login para ver suas propostas.');
+          setError('Usuário não autenticado. Faça login para ver as propostas recebidas.');
           setLoading(false);
         }
       }, 500);
@@ -81,10 +81,10 @@ export default function  ProposalsReceivesPage() {
         {/* Header Section */}
         <div className="text-center space-y-4 animate-fade-in-down">
           <h1 className="text-5xl font-bold bg-gradient-to-r from-[#FFD700] via-[#FFC107] to-[#FFEB3B] bg-clip-text text-transparent drop-shadow-lg">
-            Propostas
+            Propostas Recebidas
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Acompanhe o status de todas as suas propostas recebidas!
+            Acompanhe o status de todas as propostas recebidas nos seus carros!
           </p>
         </div>
 
@@ -116,7 +116,7 @@ export default function  ProposalsReceivesPage() {
                 Nenhuma proposta encontrada
               </h3>
               <p className="text-amber-700">
-                Você ainda não recebeu nenhuma proposta.
+                Você ainda não recebeu nenhuma proposta nos seus carros.
               </p>
             </div>
           </div>

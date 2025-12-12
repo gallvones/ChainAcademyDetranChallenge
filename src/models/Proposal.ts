@@ -3,6 +3,8 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 export interface IProposal extends Document {
   userId: mongoose.Types.ObjectId;
   carId: mongoose.Types.ObjectId;
+  owner: mongoose.Types.ObjectId;
+  manager: mongoose.Types.ObjectId;
   email: string;
   phone: number;
   amount: number;
@@ -20,6 +22,16 @@ const ProposalSchema = new Schema<IProposal>(
     carId: {
       type: Schema.Types.ObjectId,
       ref: 'Car',
+      required: true,
+    },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    manager: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
       required: true,
     },
     email: {

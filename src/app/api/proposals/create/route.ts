@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib';
 import Proposal from '@/models/Proposal';
+import Car from '@/models/Car';
+import mongoose from 'mongoose';
 
 export async function POST(request: Request) {
   try {
     await connectToDatabase();
 
+    // Ignora ownerId e managerId do body - serão obtidos do banco por segurança
     const { userId, carId, email, phone, amount, description } = await request.json();
 
     // Validar campos obrigatórios
@@ -15,6 +18,33 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    // Buscar o carro para obter owner e manager
+    const car = await Car.findById(carId).lean();
+    if (!car) {
+      return NextResponse.json(
+        { error: 'Carro não encontrado' },
+        { status: 404 }
+      );
+    }
+
+    if (!car.owner) {
+      return NextResponse.json(
+        { error: 'Carro sem proprietário definido' },
+        { status: 400 }
+      );
+    }
+
+    if (!car.manager) {
+      return NextResponse.json(
+        { error: 'Carro sem gerente definido' },
+        { status: 400 }
+      );
+    }
+
+    // Converter owner e manager para ObjectId (independente do formato)
+    const ownerId = new mongoose.Types.ObjectId(car.owner._id || car.owner);
+    const managerId = new mongoose.Types.ObjectId(car.manager._id || car.manager);
 
     // Validar email
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -41,20 +71,34 @@ export async function POST(request: Request) {
       );
     }
 
-    // Criar proposta
-    const proposal = await Proposal.create({
-      userId,
-      carId,
+    // Criar proposta usando driver MongoDB direto (bypass validação do Mongoose)
+    const db = mongoose.connection.db;
+    if (!db) {
+      return NextResponse.json(
+        { error: 'Erro de conexão com banco de dados' },
+        { status: 500 }
+      );
+    }
+
+    const proposalsCollection = db.collection('proposals');
+
+    const result = await proposalsCollection.insertOne({
+      userId: new mongoose.Types.ObjectId(userId),
+      carId: new mongoose.Types.ObjectId(carId),
+      owner: ownerId,
+      manager: managerId,
       email,
       phone,
       amount,
       description,
       status: 'pending',
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     return NextResponse.json({
       success: true,
-      proposalId: proposal._id.toString(),
+      proposalId: result.insertedId.toString(),
       message: 'Proposta criada com sucesso',
     });
   } catch (error: any) {
@@ -64,6 +108,19 @@ export async function POST(request: Request) {
     if (error.name === 'ValidationError') {
       return NextResponse.json(
         { error: 'Dados inválidos', details: error.message },
+        { status: 400 }
+      );
+    }
+
+    // Se for erro de validação do schema do MongoDB (código 121)
+    if (error.code === 121) {
+      console.error('Erro de validação do schema MongoDB:', error.errInfo);
+      return NextResponse.json(
+        {
+          error: 'Validação do MongoDB falhou',
+          details: 'Verifique se todos os campos estão corretos',
+          mongoError: error.errInfo
+        },
         { status: 400 }
       );
     }
