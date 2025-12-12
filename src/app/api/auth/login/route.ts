@@ -3,11 +3,11 @@ import { getUserByEmail } from '../../users/getuserbyemail';
 
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json();
+    const { email, password } = await request.json();
 
-    if (!email) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'Email é obrigatório' },
+        { error: 'Email e senha são obrigatórios' },
         { status: 400 }
       );
     }
@@ -16,8 +16,16 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Usuário não encontrado' },
+        { error: 'Credenciais incorretas' },
         { status: 404 }
+      );
+    }
+
+    // Validar senha
+    if (user.password !== password) {
+      return NextResponse.json(
+        { error: 'Credenciais incorretas' },
+        { status: 401 }
       );
     }
 

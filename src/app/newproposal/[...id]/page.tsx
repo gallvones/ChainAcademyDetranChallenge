@@ -1,14 +1,9 @@
 "use client";
 
-import { Header } from "@/components/organisms/header";
-import { Body } from "@/components/organisms/body";
-import { Footer } from "@/components/organisms/footer";
+import { MainLayout } from "@/components/templates";
 import { Button } from "@/components/atoms/button";
-import logoFria from "@/../public/images/logoFria.png";
 import Image from "next/image";
 import {
-  Compass,
-  FileText,
   Send,
   DollarSign,
   User,
@@ -21,7 +16,6 @@ import {
   Hash,
   MapPin,
 } from "lucide-react";
-import Link from "next/link";
 import { use, useState, useEffect } from "react";
 
 export default function NewProposal({ params }: { params: Promise<{ id: string[] }> }) {
@@ -71,13 +65,46 @@ export default function NewProposal({ params }: { params: Promise<{ id: string[]
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Aqui você implementará a lógica de envio da proposta
-    console.log("Proposta enviada:", { ...formData, carId });
+    try {
+      // Pegar userId do localStorage
+      const userDetranStr = localStorage.getItem("userDetran");
+      if (!userDetranStr) {
+        alert("Você precisa estar autenticado para enviar uma proposta");
+        setIsSubmitting(false);
+        return;
+      }
 
-    // Simular envio
-    setTimeout(() => {
-      setIsSubmitting(false);
+      const userDetran = JSON.parse(userDetranStr);
+      const userId = userDetran.id;
+
+      // Converter phone e amount para números
+      const phoneNumber = parseFloat(formData.phone.replace(/\D/g, ''));
+      const amountNumber = parseFloat(formData.proposedValue.replace(/[^\d,]/g, '').replace(',', '.'));
+
+      // Enviar proposta para a API
+      const response = await fetch("/api/proposals/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId,
+          carId,
+          email: formData.email,
+          phone: phoneNumber,
+          amount: amountNumber,
+          description: formData.message || "Sem mensagem adicional",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erro ao enviar proposta");
+      }
+
       alert("Proposta enviada com sucesso!");
+
       // Resetar formulário
       setFormData({
         name: "",
@@ -86,47 +113,17 @@ export default function NewProposal({ params }: { params: Promise<{ id: string[]
         proposedValue: "",
         message: "",
       });
-    }, 1500);
+    } catch (error: any) {
+      console.error("Erro ao enviar proposta:", error);
+      alert(error.message || "Erro ao enviar proposta. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <>
-      <Header
-        logo={
-          <Link href="/">
-            <Image
-              src={logoFria}
-              alt="ChainAcademy Logo"
-              width={80}
-              height={20}
-              className="rounded-lg object-cover cursor-pointer"
-            />
-          </Link>
-        }
-        menu={[
-          {
-            href: "/",
-            label: "Explorar",
-            icon: <Compass className="w-5 h-5" />,
-          },
-          {
-            href: "/myrequests",
-            label: "Minhas propostas",
-            icon: <FileText className="w-5 h-5" />,
-          },
-          {
-            href: "/proposalsreceives",
-            label: "Propostas recebidas",
-            icon: <FileText className="w-5 h-5" />,
-          },
-        ]}
-        variant="amber"
-        textColor="black"
-        iconColor="black"
-      />
-
-      <Body variant="light" padding="large">
-        <div className="max-w-4xl mx-auto space-y-6">
+    <MainLayout>
+      <div className="max-w-4xl mx-auto space-y-6">
           {/* Header Section */}
           <div className="text-center space-y-4">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-[#FFD700] via-[#FFC107] to-[#FFEB3B] bg-clip-text text-transparent drop-shadow-lg">
@@ -326,6 +323,7 @@ export default function NewProposal({ params }: { params: Promise<{ id: string[]
                 {/* Submit Button */}
                 <div className="pt-2 flex gap-3">
                   <Button
+                    type="submit"
                     variant="amber"
                     hoverColor="yellow"
                     size="md"
@@ -358,22 +356,7 @@ export default function NewProposal({ params }: { params: Promise<{ id: string[]
               </form>
             </div>
           </div>
-        </div>
-      </Body>
-
-      <Footer
-        logo={
-          <Image
-            src={logoFria}
-            alt="ChainAcademy Logo"
-            width={100}
-            height={100}
-            className="rounded-lg object-cover"
-          />
-        }
-        variant="amber"
-        textColor="black"
-      />
-    </>
+      </div>
+    </MainLayout>
   );
 }

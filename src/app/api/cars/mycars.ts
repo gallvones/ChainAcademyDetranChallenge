@@ -1,1 +1,0 @@
-// Aqui eu vou buscar os carros que tem o id do usuário da seesao atual/ Ao fazer login, o id será salvo no local storage?

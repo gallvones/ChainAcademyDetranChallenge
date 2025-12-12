@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/atoms/button";
 import logoFria from "@/../public/images/logoFria.png";
-import { Mail, Lock, LogIn } from "lucide-react";
+import { Mail, Lock, LogIn, Home } from "lucide-react";
+import Link from "next/link";
 
 export default function SignIn() {
   const router = useRouter();
@@ -36,7 +37,10 @@ export default function SignIn() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: formData.email }),
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        }),
       });
 
       const data = await response.json();
@@ -45,11 +49,14 @@ export default function SignIn() {
         throw new Error(data.error || "Erro ao fazer login");
       }
 
-      // Salvar no localStorage
-      localStorage.setItem("userId", data.id);
-      localStorage.setItem("userEmail", data.email);
-      localStorage.setItem("userName", data.name);
-      localStorage.setItem("userRole", data.role);
+      // Salvar no localStorage (formato esperado pelo useAuth)
+      const userDetran = {
+        id: data.id,
+        email: data.email,
+        name: data.name,
+        role: data.role,
+      };
+      localStorage.setItem("userDetran", JSON.stringify(userDetran));
 
       // Redirecionar para a home
       router.push("/");
@@ -63,10 +70,14 @@ export default function SignIn() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFD700]/20 via-[#FFC107]/10 to-[#FFEB3B]/20 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        
         {/* Container */}
         <div className="bg-white rounded-2xl shadow-[0_8px_32px_rgba(255,193,7,0.25)] border border-[#FFC107]/30 overflow-hidden">
           {/* Logo Section */}
           <div className="bg-gradient-to-r from-[#FFD700] via-[#FFC107] to-[#FFEB3B] p-8 text-center">
+          
+            <Link href="/"><Home className="w-5 h-5 "/></Link>
+            
             <div className="flex justify-center mb-4">
               <Image
                 src={logoFria}

@@ -26,17 +26,24 @@ export function useAuth(): UseAuthReturn {
   // Verifica autenticação no mount e quando localStorage muda
   useEffect(() => {
     const checkAuth = () => {
-      const storedUserId = localStorage.getItem("userId");
-      const storedUserEmail = localStorage.getItem("userEmail");
-      const storedUserName = localStorage.getItem("userName");
-      const storedUserRole = localStorage.getItem("userRole");
+      const userDetranStr = localStorage.getItem("userDetran");
 
-      if (storedUserId) {
-        setIsAuthenticated(true);
-        setUserId(storedUserId);
-        setUserEmail(storedUserEmail);
-        setUserName(storedUserName);
-        setUserRole(storedUserRole);
+      if (userDetranStr) {
+        try {
+          const userDetran = JSON.parse(userDetranStr);
+          setIsAuthenticated(true);
+          setUserId(userDetran.id);
+          setUserEmail(userDetran.email);
+          setUserName(userDetran.name);
+          setUserRole(userDetran.role);
+        } catch (error) {
+          console.error("Erro ao parsear userDetran:", error);
+          setIsAuthenticated(false);
+          setUserId(null);
+          setUserEmail(null);
+          setUserName(null);
+          setUserRole(null);
+        }
       } else {
         setIsAuthenticated(false);
         setUserId(null);
@@ -65,10 +72,7 @@ export function useAuth(): UseAuthReturn {
   };
 
   const logout = () => {
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userRole");
+    localStorage.removeItem("userDetran");
     setIsAuthenticated(false);
     setUserId(null);
     setUserEmail(null);

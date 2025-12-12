@@ -56,7 +56,7 @@ const navLinkVariants = cva(
   }
 );
 
-export function Header({ logo, menu, variant = 'gold', textColor = 'black', iconColor = 'black', className = '' }: HeaderProps) {
+export function Header({ logo, menu, variant = 'gold', textColor = 'black', iconColor = 'black', className = '', rightSlot }: HeaderProps) {
   return (
     <header className={headerVariants({ variant, textColor, className })}>
       <div className="container mx-auto px-5">
@@ -78,22 +78,26 @@ export function Header({ logo, menu, variant = 'gold', textColor = 'black', icon
             ))}
           </nav>
 
-          <button
-            className="md:hidden p-2 rounded-lg transition-all duration-300 hover:scale-110 hover:bg-white/20 hover:shadow-[0_0_16px_rgba(255,193,7,0.4)] active:scale-95"
-            aria-label="Abrir menu"
-          >
-            <svg
-              className="w-6 h-6 transition-transform duration-300 hover:rotate-90"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          <div className="flex items-center gap-4">
+            {rightSlot}
+
+            <button
+              className="md:hidden p-2 rounded-lg transition-all duration-300 hover:scale-110 hover:bg-white/20 hover:shadow-[0_0_16px_rgba(255,193,7,0.4)] active:scale-95"
+              aria-label="Abrir menu"
             >
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+              <svg
+                className="w-6 h-6 transition-transform duration-300 hover:rotate-90"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </header>

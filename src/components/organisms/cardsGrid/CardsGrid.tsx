@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { CardCart } from "@/components/molecules/cardCart";
 import { AuthModal } from "@/components/molecules/authModal";
 import { useAuth } from "@/hooks";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface CardsGridProps {
   cars: any[];
@@ -12,7 +12,7 @@ interface CardsGridProps {
 
 export function CardsGrid({ cars }: CardsGridProps) {
   const router = useRouter();
-  const { requireAuth, showAuthModal, closeAuthModal } = useAuth();
+  const { requireAuth, isAuthenticated, showAuthModal, closeAuthModal } = useAuth();
   const [pendingCarId, setPendingCarId] = useState<string | null>(null);
 
   const handleCardClick = (carId: string) => {
@@ -27,15 +27,13 @@ export function CardsGrid({ cars }: CardsGridProps) {
     router.push(`/newproposal/${carId}`);
   };
 
-  const handleAuthSuccess = () => {
-    closeAuthModal();
-
-    // Se há um carro pendente, navega para ele após login
-    if (pendingCarId) {
+  // Navega para o carro pendente quando o usuário se autentica
+  useEffect(() => {
+    if (isAuthenticated && pendingCarId) {
       router.push(`/newproposal/${pendingCarId}`);
       setPendingCarId(null);
     }
-  };
+  }, [isAuthenticated, pendingCarId, router]);
 
   if (!cars || cars.length === 0) {
     return (
@@ -46,6 +44,11 @@ export function CardsGrid({ cars }: CardsGridProps) {
       </div>
     );
   }
+
+  const handleAuthSuccess = () => {
+    closeAuthModal();
+    window.location.reload();
+  };
 
   return (
     <>
@@ -70,7 +73,7 @@ export function CardsGrid({ cars }: CardsGridProps) {
         ))}
       </div>
 
-      {/* Modal de autenticação */}
+      {/* AuthModal */}
       <AuthModal
         isOpen={showAuthModal}
         onClose={closeAuthModal}

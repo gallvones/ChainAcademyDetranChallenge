@@ -42,7 +42,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: formData.email }),
+        body: JSON.stringify({ email: formData.email, password: formData.password }),
       });
 
       const data = await response.json();
@@ -51,11 +51,14 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         throw new Error(data.error || "Erro ao fazer login");
       }
 
-      // Salvar no localStorage
-      localStorage.setItem("userId", data.id);
-      localStorage.setItem("userEmail", data.email);
-      localStorage.setItem("userName", data.name);
-      localStorage.setItem("userRole", data.role);
+      // Salvar no localStorage como objeto
+      const userDetran = {
+        id: data.id,
+        email: data.email,
+        name: data.name,
+        role: data.role,
+      };
+      localStorage.setItem("userDetran", JSON.stringify(userDetran));
 
       // Callback de sucesso
       onSuccess();

@@ -1,5 +1,5 @@
-import { VariantProps } from 'class-variance-authority';
-import { cardCartVariants } from './CardCart';
+import { VariantProps } from "class-variance-authority";
+import { cardCartVariants } from "./CardCart";
 
 export interface CardCartProps extends VariantProps<typeof cardCartVariants> {
   id: string;
@@ -15,5 +15,5 @@ export interface CardCartProps extends VariantProps<typeof cardCartVariants> {
   uf: string;
   className?: string;
   onClick?: () => void;
-  onButtonClick?: () => void;
+  onButtonClick?: (e: React.MouseEvent) => void;
 }

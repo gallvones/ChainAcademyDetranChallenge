@@ -1,8 +1,11 @@
+"use client";
+
 import { cva } from 'class-variance-authority';
 import Image from 'next/image';
 import type { CardCartProps } from './types';
 import { Car, MapPin, Calendar, Palette, Hash, User, Shield } from 'lucide-react';
 import { Button } from '@/components/atoms/button';
+import { useAuth } from '@/hooks';
 
 export const cardCartVariants = cva(
   'group relative overflow-hidden rounded-2xl transition-all duration-500 cursor-pointer border backdrop-blur-sm',
@@ -57,6 +60,12 @@ export function CardCart({
   onClick,
   onButtonClick,
 }: CardCartProps) {
+  const { isAuthenticated, userRole } = useAuth();
+
+  // Usuários não autenticados veem o botão (abrirá modal de login)
+  // Usuários autenticados com role 'customer' também podem fazer propostas
+  const canMakeProposal = !isAuthenticated || userRole === 'customer';
+
   return (
     <div
       onClick={onClick}
@@ -145,13 +154,16 @@ export function CardCart({
                 <span>{ownerName}</span>
               </div>
             )}
-<Button
-variant='amber'
-onClick={onButtonClick}
-href={onButtonClick ? undefined : `/newproposal/${id}`}
->
-Fazer proposta
-</Button>
+
+            {canMakeProposal && (
+              <Button
+                variant='amber'
+                onClick={onButtonClick}
+                href={onButtonClick ? undefined : `/newproposal/${id}`}
+              >
+                Fazer proposta
+              </Button>
+            )}
           </div>
         )}
       </div>

@@ -11,4 +11,5 @@ export interface HeaderProps {
   textColor?: 'gold' | 'yellow' | 'amber' | 'black' | 'darkGray' | 'white';
   iconColor?: 'gold' | 'yellow' | 'amber' | 'black' | 'darkGray' | 'white';
   className?: string;
+  rightSlot?: React.ReactNode;
 }

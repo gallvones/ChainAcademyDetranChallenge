@@ -30,5 +30,19 @@ export async function getAllCars() {
     return priorityA - priorityB;
   });
 
-  return sortedCars;
+  // Serializar dados para Client Components (converter ObjectIds em strings)
+  const serializedCars = sortedCars.map((car: any) => ({
+    ...car,
+    _id: car._id.toString(),
+    owner: car.owner ? {
+      ...car.owner,
+      _id: car.owner._id.toString(),
+    } : null,
+    manager: car.manager ? {
+      ...car.manager,
+      _id: car.manager._id.toString(),
+    } : null,
+  }));
+
+  return serializedCars;
 }
