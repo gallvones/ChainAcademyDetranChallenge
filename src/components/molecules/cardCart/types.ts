@@ -1,18 +1,10 @@
-import { VariantProps } from "class-variance-authority";
-import { cardCartVariants } from "./CardCart";
-
-export interface CardCartProps extends VariantProps<typeof cardCartVariants> {
+export interface CardCartProps {
   id: string;
   name: string;
   chassi: string;
-  year?: number;
-  color?: string;
-  model?: string;
-  plates?: string;
-  ownerName?: string;
-  managerName?: string;
   img?: string;
-  uf: string;
+  uf?: string;
+  index?: number;
   className?: string;
   onClick?: () => void;
   onButtonClick?: (e: React.MouseEvent) => void;

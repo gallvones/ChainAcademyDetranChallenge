@@ -6,10 +6,7 @@ export interface MenuItem {
 
 export interface HeaderProps {
   logo: React.ReactNode;
-  menu: MenuItem[];
-  variant?: 'gold' | 'yellow' | 'amber' | 'dark' | 'darkGray';
-  textColor?: 'gold' | 'yellow' | 'amber' | 'black' | 'darkGray' | 'white';
-  iconColor?: 'gold' | 'yellow' | 'amber' | 'black' | 'darkGray' | 'white';
+  menu?: MenuItem[];
   className?: string;
   rightSlot?: React.ReactNode;
 }

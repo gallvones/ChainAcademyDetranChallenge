@@ -1,176 +1,85 @@
 "use client";
 
-import { cva } from 'class-variance-authority';
 import Image from 'next/image';
 import type { CardCartProps } from './types';
-import { Car, MapPin, Calendar, Palette, Hash, User, Shield } from 'lucide-react';
-import { Button } from '@/components/atoms/button';
-import { useAuth } from '@/hooks';
-
-export const cardCartVariants = cva(
-  'group relative overflow-hidden rounded-2xl transition-all duration-500 cursor-pointer border backdrop-blur-sm',
-  {
-    variants: {
-      variant: {
-        gold: 'bg-gradient-to-br from-white to-[#FFD700]/10 border-[#FFD700]/30 hover:border-[#FFD700]/60 shadow-[0_8px_32px_rgba(255,215,0,0.15)] hover:shadow-[0_16px_48px_rgba(255,215,0,0.3)]',
-        yellow: 'bg-gradient-to-br from-white to-[#FFEB3B]/10 border-[#FFEB3B]/30 hover:border-[#FFEB3B]/60 shadow-[0_8px_32px_rgba(255,235,59,0.15)] hover:shadow-[0_16px_48px_rgba(255,235,59,0.3)]',
-        amber: 'bg-gradient-to-br from-white to-[#FFC107]/10 border-[#FFC107]/30 hover:border-[#FFC107]/60 shadow-[0_8px_32px_rgba(255,193,7,0.15)] hover:shadow-[0_16px_48px_rgba(255,193,7,0.3)]',
-        light: 'bg-gradient-to-br from-white to-gray-50 border-gray-200 hover:border-gray-300 shadow-[0_8px_32px_rgba(0,0,0,0.08)] hover:shadow-[0_16px_48px_rgba(0,0,0,0.12)]',
-        dark: 'bg-gradient-to-br from-[#1a1a1a] to-[#000000] border-[#FFD700]/20 hover:border-[#FFD700]/40 shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:shadow-[0_16px_48px_rgba(255,215,0,0.2)]',
-      },
-    },
-    defaultVariants: {
-      variant: 'light',
-    },
-  }
-);
-
-const badgeVariants = cva(
-  'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all duration-300',
-  {
-    variants: {
-      variant: {
-        gold: 'bg-[#FFD700]/20 text-[#FFD700] border border-[#FFD700]/30 group-hover:bg-[#FFD700]/30 group-hover:shadow-[0_0_12px_rgba(255,215,0,0.4)]',
-        yellow: 'bg-[#FFEB3B]/20 text-[#FFEB3B] border border-[#FFEB3B]/30 group-hover:bg-[#FFEB3B]/30 group-hover:shadow-[0_0_12px_rgba(255,235,59,0.4)]',
-        amber: 'bg-[#FFC107]/20 text-[#FFC107] border border-[#FFC107]/30 group-hover:bg-[#FFC107]/30 group-hover:shadow-[0_0_12px_rgba(255,193,7,0.4)]',
-        light: 'bg-gray-100 text-gray-700 border border-gray-200 group-hover:bg-gray-200',
-        dark: 'bg-[#FFD700]/10 text-[#FFD700] border border-[#FFD700]/20 group-hover:bg-[#FFD700]/20',
-      },
-    },
-    defaultVariants: {
-      variant: 'light',
-    },
-  }
-);
+import { Car, MapPin, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export function CardCart({
-  id,
   name,
   chassi,
-  year,
-  color,
-  model,
-  plates,
-  ownerName,
-  managerName,
   img,
   uf,
-  variant = 'light',
+  index,
   className = '',
   onClick,
   onButtonClick,
 }: CardCartProps) {
-  const { isAuthenticated, userRole } = useAuth();
-
-  // Usuários não autenticados veem o botão (abrirá modal de login)
-  // Usuários autenticados com role 'customer' também podem fazer propostas
-  const canMakeProposal = !isAuthenticated || userRole === 'customer';
-
   return (
     <div
       onClick={onClick}
-      className={cardCartVariants({ variant, className })}
+      className={`group relative flex flex-col overflow-hidden rounded-2xl border border-white/8 bg-[#0c0c0d] transition-all duration-500 hover:-translate-y-1.5 hover:border-[#FFC107]/45 hover:shadow-[0_24px_60px_rgba(255,193,7,0.14)] ${className}`}
     >
-      {/* Image Container */}
-      <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 group-hover:scale-105 transition-transform duration-500">
+      {/* gold top hairline on hover */}
+      <div className="absolute top-0 inset-x-0 h-px hairline-gold opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+
+      {/* Image */}
+      <div className="relative h-44 overflow-hidden">
+        <div className="absolute inset-0 grid-bg" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_55%,rgba(255,193,7,0.16),transparent_60%)]" />
+
+        <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-[#FFC107]/25 bg-black/50 px-2.5 py-1 backdrop-blur-sm">
+          <ShieldCheck className="h-3 w-3 text-[#FFD700]" />
+          <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#FFD700]">
+            Certificado
+          </span>
+        </div>
+
+        {uf && (
+          <div className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#FFC107] px-2.5 py-1 text-black">
+            <MapPin className="h-3 w-3" />
+            <span className="text-[10px] font-bold">{uf}</span>
+          </div>
+        )}
+
+        {typeof index === 'number' && (
+          <span className="absolute bottom-2 right-3 font-mono text-3xl font-bold text-white/5">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+        )}
+
         {img ? (
           <Image
             src={img}
             alt={name}
             fill
-            className="object-contain transition-all duration-500 group-hover:scale-110 p-2"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-contain p-4 transition-transform duration-500 group-hover:scale-110"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Car className="w-20 h-20 text-gray-400" />
-          </div>
-        )}
-
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-        {/* UF Badge - Top Right */}
-        <div className="absolute top-3 right-3">
-          <div className={badgeVariants({ variant })}>
-            <MapPin className="w-3 h-3" />
-            {uf}
-          </div>
-        </div>
-      </div>
-
-      {/* Content Container */}
-      <div className="p-5 space-y-4">
-        {/* Title */}
-        <div className="space-y-1">
-          <h3 className="text-xl font-bold text-gray-900 group-hover:text-[#FFC107] transition-colors duration-300 flex items-center gap-2">
-            <Car className="w-5 h-5" />
-            {name}
-          </h3>
-          <p className="text-sm text-gray-500 font-mono">{model || 'Modelo não especificado'}</p>
-        </div>
-
-        {/* Info Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          {year && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Calendar className="w-4 h-4 text-[#FFC107]" />
-              <span>{year}</span>
-            </div>
-          )}
-
-          {color && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Palette className="w-4 h-4 text-[#FFC107]" />
-              <span className="capitalize">{color}</span>
-            </div>
-          )}
-
-
-
-          {plates && (
-            <div className="flex items-center gap-2 text-sm text-gray-600 col-span-2">
-              <Hash className="w-4 h-4 text-[#FFC107]" />
-              <span className="font-mono font-semibold">{plates}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Chassi */}
-        <div className="pt-3 border-t border-gray-200">
-          <p className="text-xs text-gray-500 flex items-center gap-2">
-            <span className="font-semibold">Chassi:</span>
-            <span className="font-mono">{chassi}</span>
-          </p>
-        </div>
-
-        {/* Owner & Manager */}
-        {(ownerName || managerName) && (
-          <div className="pt-3 border-t border-gray-200 space-y-2">
-            {ownerName && (
-              <div className="flex items-center gap-2 text-xs text-gray-600">
-                <User className="w-3.5 h-3.5 text-[#FFC107]" />
-                <span className="font-semibold">Proprietário:</span>
-                <span>{ownerName}</span>
-              </div>
-            )}
-
-            {canMakeProposal && (
-              <Button
-                variant='amber'
-                onClick={onButtonClick}
-                href={onButtonClick ? undefined : `/newproposal/${id}`}
-              >
-                Fazer proposta
-              </Button>
-            )}
+          <div className="flex h-full items-center justify-center">
+            <Car className="h-16 w-16 text-neutral-700" />
           </div>
         )}
       </div>
 
-      {/* Hover Border Effect */}
-      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FFD700] via-[#FFEB3B] to-[#FFC107]" />
+      {/* Content */}
+      <div className="flex flex-1 flex-col gap-4 p-5">
+        <h3 className="font-display text-xl font-semibold text-white transition-colors duration-300 group-hover:text-[#FFD700]">
+          {name}
+        </h3>
+
+        <div className="border-t border-white/8 pt-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Chassi</p>
+          <p className="mt-0.5 break-all font-mono text-xs tracking-wider text-neutral-300">{chassi}</p>
+        </div>
+
+        <button
+          onClick={onButtonClick}
+          className="mt-auto flex items-center justify-between rounded-xl border border-[#FFC107]/25 bg-[#FFC107]/8 px-4 py-2.5 font-display text-sm font-medium text-[#FFD700] transition-all duration-300 hover:bg-[#FFC107] hover:text-black"
+        >
+          Fazer proposta
+          <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+        </button>
       </div>
     </div>
   );

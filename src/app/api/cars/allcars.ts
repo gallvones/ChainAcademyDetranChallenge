@@ -1,48 +1,25 @@
-import { connectToDatabase } from "@/lib";
-import Car from "@/models/Car";
+import { serviceNow, type TableResponse } from "@/lib";
+import type { CatalogCar } from "@/types/car";
 
-export async function getAllCars() {
-  await connectToDatabase();
+interface CatalogRow {
+  sys_id: string;
+  car_name: string;
+  car_chassi: string;
+  image_url: string;
+}
 
-  const cars = await Car.find({})
-    .populate("owner", "name email role")
-    .populate("manager", "name email role region")
-    .lean();
+export async function getAllCars(): Promise<CatalogCar[]> {
+  const data = await serviceNow.get<TableResponse<CatalogRow[]>>(
+    "/api/now/table/x_1880990_chain_car_catalog" +
+      "?sysparm_query=active=true^ORDERBYcar_name" +
+      "&sysparm_limit=10" +
+      "&sysparm_fields=sys_id,car_name,car_chassi,image_url"
+  );
 
-  // Função de priorização de cores
-  const getColorPriority = (color: string | undefined): number => {
-    if (!color) return 999; // Sem cor vai pro final
-
-    const normalizedColor = color.toLowerCase().trim();
-
-    // Prioridade: preto = 1, amarelo = 2, azul = 3, outros = 999
-    if (normalizedColor.includes('pret') || normalizedColor === 'black') return 1;
-    if (normalizedColor.includes('amar') || normalizedColor === 'yellow') return 2;
-    if (normalizedColor.includes('azul') || normalizedColor === 'blue') return 3;
-
-    return 999; // Outras cores
-  };
-
-  // Ordenar carros por prioridade de cor
-  const sortedCars = cars.sort((a: any, b: any) => {
-    const priorityA = getColorPriority(a.info?.color);
-    const priorityB = getColorPriority(b.info?.color);
-    return priorityA - priorityB;
-  });
-
-  // Serializar dados para Client Components (converter ObjectIds em strings)
-  const serializedCars = sortedCars.map((car: any) => ({
-    ...car,
-    _id: car._id.toString(),
-    owner: car.owner ? {
-      ...car.owner,
-      _id: car.owner._id.toString(),
-    } : null,
-    manager: car.manager ? {
-      ...car.manager,
-      _id: car.manager._id.toString(),
-    } : null,
+  return data.result.map((c) => ({
+    id: c.sys_id,
+    name: c.car_name,
+    chassi: c.car_chassi,
+    img: c.image_url,
   }));
-
-  return serializedCars;
 }

@@ -16,9 +16,9 @@ export const buttonVariants = cva(
         darkGray:
           "bg-[#333333] border-[#333333] text-white shadow-[0_3px_15px_rgba(51,51,51,0.3)]",
         light:
-          "bg-white border-gray-300 text-gray-800 shadow-[0_3px_15px_rgba(0,0,0,0.1)]",
+          "bg-white/5 border-white/10 text-neutral-200 shadow-none backdrop-blur-sm",
         outline:
-          "bg-transparent border-gray-300 text-gray-800 hover:bg-gray-50",
+          "bg-transparent border-[#FFC107]/40 text-[#FFD700] hover:bg-[#FFC107]/10",
         gradient:
           "bg-gradient-to-r from-[#FFD700] via-[#FFEB3B] to-[#FFC107] border-transparent text-black shadow-[0_3px_15px_rgba(255,193,7,0.4)]",
       },

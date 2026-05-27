@@ -1,133 +1,49 @@
-import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib';
-import Proposal from '@/models/Proposal';
-import Car from '@/models/Car';
-import mongoose from 'mongoose';
+import { NextResponse } from "next/server";
+import { serviceNow, type TableResponse } from "@/lib";
+
+interface CreatedProposal {
+  sys_id: string;
+  number: string;
+}
 
 export async function POST(request: Request) {
   try {
-    await connectToDatabase();
+    const { car_name, car_chassi, purchase_offer } = await request.json();
 
-    // Ignora ownerId e managerId do body - serão obtidos do banco por segurança
-    const { userId, carId, email, phone, amount, description } = await request.json();
-
-    // Validar campos obrigatórios
-    if (!userId || !carId || !email || !phone || !amount || !description) {
+    if (!car_name || !car_chassi || purchase_offer == null) {
       return NextResponse.json(
-        { error: 'Todos os campos são obrigatórios' },
+        { error: "car_name, car_chassi e purchase_offer são obrigatórios" },
         { status: 400 }
       );
     }
 
-    // Buscar o carro para obter owner e manager
-    const car = await Car.findById(carId).lean();
-    if (!car) {
-      return NextResponse.json(
-        { error: 'Carro não encontrado' },
-        { status: 404 }
-      );
+    const amount = Number(purchase_offer);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return NextResponse.json({ error: "Valor da proposta inválido" }, { status: 400 });
     }
 
-    if (!car.owner) {
-      return NextResponse.json(
-        { error: 'Carro sem proprietário definido' },
-        { status: 400 }
-      );
+    const buyer = process.env.JORGE_SYS_ID;
+    if (!buyer) {
+      return NextResponse.json({ error: "JORGE_SYS_ID não configurado" }, { status: 500 });
     }
 
-    if (!car.manager) {
-      return NextResponse.json(
-        { error: 'Carro sem gerente definido' },
-        { status: 400 }
-      );
-    }
-
-    // Converter owner e manager para ObjectId (independente do formato)
-    const ownerId = new mongoose.Types.ObjectId(car.owner._id || car.owner);
-    const managerId = new mongoose.Types.ObjectId(car.manager._id || car.manager);
-
-    // Validar email
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Email inválido' },
-        { status: 400 }
-      );
-    }
-
-    // Validar phone (deve ser número)
-    if (typeof phone !== 'number' || phone <= 0) {
-      return NextResponse.json(
-        { error: 'Telefone inválido' },
-        { status: 400 }
-      );
-    }
-
-    // Validar amount (deve ser número >= 0)
-    if (typeof amount !== 'number' || amount < 0) {
-      return NextResponse.json(
-        { error: 'Valor da proposta inválido' },
-        { status: 400 }
-      );
-    }
-
-    // Criar proposta usando driver MongoDB direto (bypass validação do Mongoose)
-    const db = mongoose.connection.db;
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Erro de conexão com banco de dados' },
-        { status: 500 }
-      );
-    }
-
-    const proposalsCollection = db.collection('proposals');
-
-    const result = await proposalsCollection.insertOne({
-      userId: new mongoose.Types.ObjectId(userId),
-      carId: new mongoose.Types.ObjectId(carId),
-      owner: ownerId,
-      manager: managerId,
-      email,
-      phone,
-      amount,
-      description,
-      status: 'pending',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    const data = await serviceNow.post<TableResponse<CreatedProposal>>(
+      "/api/now/table/x_1880990_chain_proposal",
+      {
+        car_name,
+        car_chassi,
+        purchase_offer: String(amount),
+        buyer,
+      }
+    );
 
     return NextResponse.json({
       success: true,
-      proposalId: result.insertedId.toString(),
-      message: 'Proposta criada com sucesso',
+      sys_id: data.result.sys_id,
+      number: data.result.number,
     });
-  } catch (error: any) {
-    console.error('Erro ao criar proposta:', error);
-
-    // Se for erro de validação do MongoDB
-    if (error.name === 'ValidationError') {
-      return NextResponse.json(
-        { error: 'Dados inválidos', details: error.message },
-        { status: 400 }
-      );
-    }
-
-    // Se for erro de validação do schema do MongoDB (código 121)
-    if (error.code === 121) {
-      console.error('Erro de validação do schema MongoDB:', error.errInfo);
-      return NextResponse.json(
-        {
-          error: 'Validação do MongoDB falhou',
-          details: 'Verifique se todos os campos estão corretos',
-          mongoError: error.errInfo
-        },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: 'Erro ao criar proposta' },
-      { status: 500 }
-    );
+  } catch (error) {
+    console.error("Erro ao criar proposta:", error);
+    return NextResponse.json({ error: "Erro ao criar proposta" }, { status: 500 });
   }
 }

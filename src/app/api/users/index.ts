@@ -1,1 +1,0 @@
-export { getUserByEmail } from './getuserbyemail';

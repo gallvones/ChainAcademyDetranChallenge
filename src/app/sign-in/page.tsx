@@ -5,26 +5,14 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/atoms/button";
 import logoFria from "@/../public/images/logoFria.png";
-import { Mail, Lock, LogIn, Home } from "lucide-react";
+import { Mail, LogIn, ArrowLeft, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 export default function SignIn() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    setError("");
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,137 +22,105 @@ export default function SignIn() {
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Erro ao fazer login");
 
-      if (!response.ok) {
-        throw new Error(data.error || "Erro ao fazer login");
-      }
-
-      // Salvar no localStorage (formato esperado pelo useAuth)
-      const userDetran = {
-        id: data.id,
-        email: data.email,
-        name: data.name,
-        role: data.role,
-      };
-      localStorage.setItem("userDetran", JSON.stringify(userDetran));
-
-      // Redirecionar para a home
+      localStorage.setItem(
+        "userDetran",
+        JSON.stringify({ id: data.id, email: data.email, name: data.name, role: data.role })
+      );
       router.push("/");
-    } catch (err: any) {
-      setError(err.message || "Erro ao fazer login");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao fazer login");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFD700]/20 via-[#FFC107]/10 to-[#FFEB3B]/20 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        
-        {/* Container */}
-        <div className="bg-white rounded-2xl shadow-[0_8px_32px_rgba(255,193,7,0.25)] border border-[#FFC107]/30 overflow-hidden">
-          {/* Logo Section */}
-          <div className="bg-gradient-to-r from-[#FFD700] via-[#FFC107] to-[#FFEB3B] p-8 text-center">
-          
-            <Link href="/"><Home className="w-5 h-5 "/></Link>
-            
-            <div className="flex justify-center mb-4">
-              <Image
-                src={logoFria}
-                alt="ChainAcademy Logo"
-                width={120}
-                height={120}
-                className="rounded-lg object-cover"
-              />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0a0a0b] p-4">
+      {/* canvas */}
+      <div className="absolute inset-0 grid-bg [mask-image:radial-gradient(ellipse_at_center,black,transparent_80%)]" />
+      <div className="absolute left-1/2 top-1/3 h-[480px] w-[680px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,193,7,0.14),transparent_70%)] blur-2xl" />
+
+      <div className="relative w-full max-w-md animate-fade-in-up">
+        <Link
+          href="/"
+          className="mb-6 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-neutral-500 transition-colors hover:text-[#FFD700]"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Voltar ao catálogo
+        </Link>
+
+        <div className="overflow-hidden rounded-3xl border border-[#FFC107]/20 bg-[#0c0c0d] shadow-[0_24px_80px_rgba(0,0,0,0.5)]">
+          <div className="absolute inset-x-0 h-px hairline-gold" />
+
+          {/* header */}
+          <div className="relative border-b border-white/5 p-8 text-center">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,193,7,0.12),transparent_65%)]" />
+            <div className="relative mb-5 flex justify-center">
+              <div className="rounded-2xl border border-[#FFC107]/25 bg-white/5 p-3">
+                <Image src={logoFria} alt="Chain Registry" width={84} height={84} className="object-cover" />
+              </div>
             </div>
-            <h1 className="text-2xl font-bold text-black">ChainAcademy</h1>
-            <p className="text-sm text-black/80 mt-2">
-              Faça login para acessar sua conta
+            <h1 className="font-display text-2xl font-bold text-white">Chain Registry</h1>
+            <p className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#FFC107]/80">
+              <ShieldCheck className="h-3 w-3" />
+              Acesso do comprador
             </p>
           </div>
 
-          {/* Form Section */}
+          {/* form */}
           <div className="p-8">
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Email */}
               <div className="space-y-2">
                 <label
                   htmlFor="email"
-                  className="flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase tracking-wide"
+                  className="flex items-center gap-2 font-display text-xs font-semibold uppercase tracking-[0.18em] text-neutral-400"
                 >
-                  <Mail className="w-4 h-4 text-[#FFC107]" />
-                  Email
+                  <Mail className="h-3.5 w-3.5 text-[#FFC107]" />
+                  Email cadastrado
                 </label>
                 <input
                   type="email"
                   id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError("");
+                  }}
                   required
-                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#FFC107] focus:ring-2 focus:ring-[#FFC107]/20 transition-all outline-none text-gray-900"
-                  placeholder="seu@email.com"
+                  placeholder="voce@email.com"
+                  className="w-full rounded-xl border-2 border-white/10 bg-[#0a0a0b] px-4 py-3 text-white outline-none transition-all placeholder:text-neutral-700 focus:border-[#FFC107] focus:ring-4 focus:ring-[#FFC107]/15"
                 />
               </div>
 
-              {/* Password */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="password"
-                  className="flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase tracking-wide"
-                >
-                  <Lock className="w-4 h-4 text-[#FFC107]" />
-                  Senha
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#FFC107] focus:ring-2 focus:ring-[#FFC107]/20 transition-all outline-none text-gray-900"
-                  placeholder="••••••••"
-                />
-              </div>
-
-              {/* Error Message */}
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600">{error}</p>
+                <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3">
+                  <p className="text-sm text-red-300">{error}</p>
                 </div>
               )}
 
-              {/* Submit Button */}
               <Button
                 variant="amber"
                 hoverColor="yellow"
                 size="lg"
                 disabled={isLoading}
                 className="w-full"
-                icon={<LogIn className="w-5 h-5" />}
+                icon={<LogIn className="h-5 w-5" />}
                 type="submit"
               >
                 {isLoading ? "Entrando..." : "Entrar"}
               </Button>
             </form>
 
-            {/* Footer */}
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-500">
-                Não possui senha? Entre apenas com seu email cadastrado.
-              </p>
-            </div>
+            <p className="mt-6 text-center text-xs text-neutral-600">
+              Sem senha — entre apenas com seu email cadastrado.
+            </p>
           </div>
         </div>
       </div>

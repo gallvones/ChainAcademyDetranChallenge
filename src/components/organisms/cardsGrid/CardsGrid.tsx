@@ -4,36 +4,23 @@ import { useRouter } from "next/navigation";
 import { CardCart } from "@/components/molecules/cardCart";
 import { AuthModal } from "@/components/molecules/authModal";
 import { useAuth } from "@/hooks";
-import { useState, useEffect } from "react";
+import type { CatalogCar } from "@/types/car";
 
 interface CardsGridProps {
-  cars: any[];
+  cars: CatalogCar[];
 }
 
 export function CardsGrid({ cars }: CardsGridProps) {
   const router = useRouter();
-  const { requireAuth, isAuthenticated, showAuthModal, closeAuthModal } = useAuth();
-  const [pendingCarId, setPendingCarId] = useState<string | null>(null);
+  const { requireAuth, showAuthModal, closeAuthModal } = useAuth();
 
   const handleCardClick = (carId: string) => {
-    // Verifica autenticação antes de navegar
     if (!requireAuth()) {
-      // Salva o ID do carro para navegar após login
-      setPendingCarId(carId);
       return;
     }
 
-    // Se autenticado, navega direto
     router.push(`/newproposal/${carId}`);
   };
-
-  // Navega para o carro pendente quando o usuário se autentica
-  useEffect(() => {
-    if (isAuthenticated && pendingCarId) {
-      router.push(`/newproposal/${pendingCarId}`);
-      setPendingCarId(null);
-    }
-  }, [isAuthenticated, pendingCarId, router]);
 
   if (!cars || cars.length === 0) {
     return (
@@ -52,28 +39,26 @@ export function CardsGrid({ cars }: CardsGridProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-10 lg:gap-12 animate-fade-in-up">
-        {cars.map((car: any) => (
-          <CardCart
-            key={car._id.toString()}
-            id={car._id.toString()}
-            name={car.name}
-            chassi={car.chassi}
-            year={car.info?.year}
-            color={car.info?.color}
-            img={car.img}
-            model={car.info?.model}
-            plates={car.info?.plates}
-            ownerName={car.owner?.name}
-            managerName={car.manager?.name}
-            uf={car.uf}
-            variant="light"
-            onButtonClick={() => handleCardClick(car._id.toString())}
-          />
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {cars.map((car, i) => (
+          <div
+            key={car.id}
+            className="animate-fade-in-up"
+            style={{ animationDelay: `${i * 70}ms` }}
+          >
+            <CardCart
+              id={car.id}
+              name={car.name}
+              chassi={car.chassi}
+              img={car.img}
+              index={i}
+              onClick={() => handleCardClick(car.id)}
+              onButtonClick={() => handleCardClick(car.id)}
+            />
+          </div>
         ))}
       </div>
 
-      {/* AuthModal */}
       <AuthModal
         isOpen={showAuthModal}
         onClose={closeAuthModal}

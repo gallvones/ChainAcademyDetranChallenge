@@ -11,21 +11,14 @@ export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Fecha o menu ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
   const handleLogout = () => {
@@ -35,18 +28,13 @@ export function UserMenu() {
     window.location.reload();
   };
 
-  const handleLogin = () => {
-    router.push("/sign-in");
-  };
-
-  // Se não estiver autenticado, mostra botão de Login
   if (!isAuthenticated) {
     return (
       <button
-        onClick={handleLogin}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-[#FFD700] to-[#FFC107] hover:from-[#FFC107] hover:to-[#FFEB3B] transition-all duration-300 shadow-lg hover:shadow-xl font-medium text-black cursor-pointer"
+        onClick={() => router.push("/sign-in")}
+        className="flex items-center gap-2 rounded-lg border border-[#FFC107]/30 bg-[#FFC107]/10 px-4 py-2 font-display text-sm font-medium text-[#FFD700] transition-all duration-300 hover:bg-[#FFC107]/20 hover:shadow-[0_0_20px_rgba(255,193,7,0.25)]"
       >
-        <LogIn className="w-5 h-5" />
+        <LogIn className="h-4 w-4" />
         Entrar
       </button>
     );
@@ -54,29 +42,25 @@ export function UserMenu() {
 
   return (
     <div className="relative" ref={menuRef}>
-      {/* Profile Icon Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-[#FFD700] to-[#FFC107] hover:from-[#FFC107] hover:to-[#FFEB3B] transition-all duration-300 shadow-lg hover:shadow-xl cursor-pointer"
+        className="flex h-11 w-11 items-center justify-center rounded-full border border-[#FFC107]/30 bg-gradient-to-br from-[#FFD700] to-[#FFC107] transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,193,7,0.4)]"
       >
-        <User className="w-6 h-6 text-black" />
+        <User className="h-5 w-5 text-black" />
       </button>
 
-      {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 min-w-[200px] bg-white rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.15)] border border-gray-200 overflow-hidden z-50 animate-fade-in-down">
-          {/* User Info */}
-          <div className="px-4 py-3 bg-gradient-to-r from-[#FFD700]/10 to-[#FFC107]/10 border-b border-gray-200">
-            <p className="text-sm font-semibold text-gray-700 whitespace-nowrap">Olá, {userName}!</p>
+        <div className="absolute right-0 mt-2 min-w-[210px] overflow-hidden rounded-xl border border-[#FFC107]/20 bg-[#0c0c0d] shadow-[0_16px_48px_rgba(0,0,0,0.6)] animate-fade-in-down">
+          <div className="border-b border-white/5 bg-gradient-to-r from-[#FFC107]/10 to-transparent px-4 py-3">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-[#FFC107]/70">Buyer</p>
+            <p className="font-display text-sm font-semibold text-white">{userName}</p>
           </div>
-
-          {/* Logout Option */}
           <button
             onClick={handleLogout}
-            className="w-full px-4 py-3 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+            className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-200 hover:bg-white/5"
           >
-            <LogOut className="w-4 h-4 text-gray-600 flex-shrink-0" />
-            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Sair</span>
+            <LogOut className="h-4 w-4 flex-shrink-0 text-[#FFC107]" />
+            <span className="text-sm font-medium text-neutral-300">Sair</span>
           </button>
         </div>
       )}
