@@ -64,7 +64,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,193,7,0.12),transparent_65%)]" />
           <div className="relative mb-4 flex justify-center">
             <div className="rounded-2xl border border-[#FFC107]/25 bg-white/5 p-2.5">
-              <Image src={logoFria} alt="Chain Registry" width={72} height={72} className="object-cover" />
+              <Image src={logoFria} alt="Chain Registry" width={120} height={120} className="object-cover" />
             </div>
           </div>
           <h2 className="font-display text-xl font-bold text-white">Acesso necessário</h2>

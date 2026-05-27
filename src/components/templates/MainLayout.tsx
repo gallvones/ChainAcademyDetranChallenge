@@ -17,8 +17,8 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
             <Image
               src={logoFria}
               alt="Detran SP"
-              width={60}
-              height={60}
+              width={100}
+              height={100}
               className="rounded-xl object-cover transition-transform duration-300 hover:scale-105"
               priority
             />
@@ -34,8 +34,8 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
           <Image
             src={logoFria}
             alt="Detran SP"
-            width={88}
-            height={88}
+            width={100}
+            height={100}
             className="object-cover"
           />
         }

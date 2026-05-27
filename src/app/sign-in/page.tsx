@@ -64,7 +64,7 @@ export default function SignIn() {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,193,7,0.12),transparent_65%)]" />
             <div className="relative mb-5 flex justify-center">
               <div className="rounded-2xl border border-[#FFC107]/25 bg-white/5 p-3">
-                <Image src={logoFria} alt="Chain Registry" width={84} height={84} className="object-cover" />
+                <Image src={logoFria} alt="Chain Registry" width={120} height={120} className="object-cover" />
               </div>
             </div>
             <h1 className="font-display text-2xl font-bold text-white">Chain Registry</h1>
